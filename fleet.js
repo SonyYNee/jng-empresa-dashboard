@@ -48,7 +48,7 @@ export async function initFleet(db, { session, body, json, validPhoto }) {
   CREATE TABLE IF NOT EXISTS refills (
     id SERIAL PRIMARY KEY, vehicle_id INTEGER NOT NULL REFERENCES vehicles(id),
     kind TEXT NOT NULL, date TEXT NOT NULL, odometer DOUBLE PRECISION NOT NULL, litres DOUBLE PRECISION NOT NULL,
-    price INTEGER NOT NULL, total INTEGER NOT NULL, full INTEGER NOT NULL);
+    price INTEGER NOT NULL, total INTEGER NOT NULL, tank_full INTEGER NOT NULL);
   CREATE TABLE IF NOT EXISTS maintenance (
     id SERIAL PRIMARY KEY, vehicle_id INTEGER NOT NULL REFERENCES vehicles(id),
     description TEXT NOT NULL, date TEXT NOT NULL, amount INTEGER NOT NULL,
@@ -75,7 +75,7 @@ export async function initFleet(db, { session, body, json, validPhoto }) {
     return value;
   };
   async function summary(vehicle) {
-    const rows = await db.all('SELECT * FROM refills WHERE vehicle_id=$1 ORDER BY date,odometer,id', [vehicle.id]);
+    const rows = (await db.all('SELECT * FROM refills WHERE vehicle_id=$1 ORDER BY date,odometer,id', [vehicle.id])).map(row => ({ ...row, full: row.tank_full ?? row.full }));
     const entries = await db.all('SELECT * FROM vehicle_entries WHERE vehicle_id=$1 ORDER BY date DESC,id DESC', [vehicle.id]);
     const maintenance = await db.all('SELECT * FROM maintenance WHERE vehicle_id=$1 ORDER BY date,id', [vehicle.id]);
     const revenue = entries.filter(r => r.kind === 'revenue').reduce((sum, r) => sum + r.amount, 0);
@@ -147,7 +147,7 @@ export async function initFleet(db, { session, body, json, validPhoto }) {
         const same = await db.get('SELECT id FROM refills WHERE vehicle_id=$1 AND kind=$2 AND odometer=$3', [vehicleId, data.kind, odometer]);
         if (same) fail('Já existe abastecimento desse produto nesta quilometragem.', 409);
         await db.transaction(async client => {
-          await client.query('INSERT INTO refills(vehicle_id,kind,date,odometer,litres,price,total,full) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [vehicleId, data.kind, refillDate, odometer, litres, price, Math.round(litres * price / 10), Number(data.full)]);
+          await client.query('INSERT INTO refills(vehicle_id,kind,date,odometer,litres,price,total,tank_full) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [vehicleId, data.kind, refillDate, odometer, litres, price, Math.round(litres * price / 10), Number(data.full)]);
           await client.query('UPDATE vehicles SET odometer=GREATEST(odometer,$1) WHERE id=$2', [odometer, vehicleId]);
         });
       } else if (pathname === '/api/fleet/entry') {
