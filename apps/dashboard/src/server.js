@@ -245,10 +245,10 @@ export const server = http.createServer(async (req, res) => {
           return json(res, 400, { error: 'Informe um nome e um e-mail válidos.' });
         if (
           typeof data.password !== 'string' ||
-          data.password.length < 6 ||
+          data.password.length < 4 ||
           data.password.length > 128
         )
-          return json(res, 400, { error: 'A senha deve ter entre 6 e 128 caracteres.' });
+          return json(res, 400, { error: 'A senha deve ter entre 4 e 128 caracteres.' });
         if (await db.get('SELECT id FROM users WHERE email=$1', [email]))
           return json(res, 409, { error: 'Este e-mail já está em uso.' });
         const inserted = await db.run(
@@ -312,10 +312,10 @@ export const server = http.createServer(async (req, res) => {
       if (changingPassword) {
         if (
           typeof data.password !== 'string' ||
-          data.password.length < 6 ||
+          data.password.length < 4 ||
           data.password.length > 128
         )
-          return json(res, 400, { error: 'A nova senha deve ter entre 6 e 128 caracteres.' });
+          return json(res, 400, { error: 'A nova senha deve ter entre 4 e 128 caracteres.' });
         if (data.password !== data.confirmPassword)
           return json(res, 400, { error: 'A confirmação da nova senha não confere.' });
         if (data.password === data.currentPassword)
@@ -373,13 +373,13 @@ export const server = http.createServer(async (req, res) => {
         )
           return json(res, 403, { error: 'Configuração inicial indisponível ou código inválido.' });
         if (
-          password.length < 6 ||
+          password.length < 4 ||
           typeof data.name !== 'string' ||
           !data.name.trim() ||
           data.name.length > 80
         )
           return json(res, 400, {
-            error: 'Informe seu nome e uma senha com pelo menos 6 caracteres.',
+            error: 'Informe seu nome e uma senha com pelo menos 4 caracteres.',
           });
         await db.run("INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,'owner')", [
           data.name.trim(),

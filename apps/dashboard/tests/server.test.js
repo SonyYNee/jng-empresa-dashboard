@@ -24,7 +24,7 @@ test('cadastro, proteção, login, persistência e logout', async () => {
     const data = {
       name: 'Teste',
       email: 'teste@example.com',
-      password: 'SenhaTesteSegura123',
+      password: 'Ab12',
       token: process.env.SETUP_TOKEN,
     };
     assert.equal((await post('/api/setup', { ...data, token: 'wrong' })).status, 403);
@@ -67,12 +67,12 @@ test('cadastro, proteção, login, persistência e logout', async () => {
     const newUser = {
       name: 'Nova Motorista',
       email: 'nova@example.com',
-      password: 'SenhaInicialSegura123',
+      password: 'Cd34',
       role: 'driver',
     };
     assert.equal((await post('/api/users', newUser)).status, 401);
     assert.equal((await post('/api/users', { ...newUser, role: '__proto__' }, cookie)).status, 400);
-    assert.equal((await post('/api/users', { ...newUser, password: 'curta' }, cookie)).status, 400);
+    assert.equal((await post('/api/users', { ...newUser, password: '123' }, cookie)).status, 400);
     const createdResponse = await post('/api/users', newUser, cookie);
     assert.equal(createdResponse.status, 201);
     const created = await createdResponse.json();
@@ -245,8 +245,8 @@ test('cadastro, proteção, login, persistência e logout', async () => {
           '/api/password',
           {
             currentPassword: 'errada',
-            password: 'NovaSenhaSegura123',
-            confirmPassword: 'NovaSenhaSegura123',
+            password: 'Ef56',
+            confirmPassword: 'Ef56',
           },
           cookie,
         )
@@ -259,7 +259,7 @@ test('cadastro, proteção, login, persistência e logout', async () => {
           '/api/password',
           {
             currentPassword: data.password,
-            password: 'NovaSenhaSegura123',
+            password: 'Ef56',
             confirmPassword: 'diferente',
           },
           cookie,
@@ -273,8 +273,8 @@ test('cadastro, proteção, login, persistência e logout', async () => {
           '/api/password',
           {
             currentPassword: data.password,
-            password: 'NovaSenhaSegura123',
-            confirmPassword: 'NovaSenhaSegura123',
+            password: 'Ef56',
+            confirmPassword: 'Ef56',
           },
           cookie,
         )
@@ -290,8 +290,7 @@ test('cadastro, proteção, login, persistência e logout', async () => {
       401,
     );
     assert.equal(
-      (await post('/api/login', { email: 'novo@example.com', password: 'NovaSenhaSegura123' }))
-        .status,
+      (await post('/api/login', { email: 'novo@example.com', password: 'Ef56' })).status,
       200,
     );
     database.close();
