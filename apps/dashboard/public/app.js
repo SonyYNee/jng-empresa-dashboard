@@ -170,8 +170,15 @@ function login(setup = false) {
   };
 }
 function date(value) {
+  if (typeof value !== 'string' || !value.trim()) return 'Data indisponível';
+  const normalized = value.trim().replace(' ', 'T');
+  // SQLite não inclui fuso; PostgreSQL já envia ISO com Z ou deslocamento.
+  const timestamp = new Date(
+    /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized) ? normalized : normalized + 'Z',
+  );
+  if (!Number.isFinite(timestamp.getTime())) return 'Data indisponível';
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(
-    new Date(value.replace(' ', 'T') + 'Z'),
+    timestamp,
   );
 }
 const avatar = (user, large = false) =>
