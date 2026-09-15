@@ -1,3 +1,10 @@
 node_modules/
 data/
 *.zip
+.env
+.env.*
+!.env.example
+certs/
+**/dist/
+artifacts/
+*.log

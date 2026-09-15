@@ -1,0 +1,14 @@
+node_modules/
+**/node_modules/
+**/dist/
+data/
+certs/
+Imagens/
+assets/originais/
+**/.git/
+**/.openai/
+.env
+.env.*
+*.zip
+artifacts/
+**/public/assets/

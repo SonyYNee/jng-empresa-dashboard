@@ -1,0 +1,19 @@
+{
+  "name": "jng-site-comercial",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4173",
+    "build": "vite build && node scripts/prerender.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1",
+    "vite": "^7.1.0"
+  }
+}
