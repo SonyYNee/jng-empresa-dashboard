@@ -2,6 +2,8 @@ import { normalizeSqliteSql } from './db.js';
 
 function ensureDbCompat(db) {
   if (!db || typeof db.run === 'function') return db;
+  const originalExec = db.exec.bind(db);
+  db.exec = (sql) => originalExec(normalizeSqliteSql(sql));
   const safe = (sql, params = []) => {
     const normalized = normalizeSqliteSql(sql);
     const statement = db.prepare(normalized);
@@ -22,12 +24,10 @@ function ensureDbCompat(db) {
   return db;
 }
 
-export function initSocial(db, { session, body, json }) {
+export async function initSocial(db, { session, body, json }) {
   db = ensureDbCompat(db);
-  db.exec(
-    normalizeSqliteSql(
-      'CREATE TABLE IF NOT EXISTS company_social (id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL)',
-    ),
+  await db.exec(
+    'CREATE TABLE IF NOT EXISTS company_social (id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL)',
   );
   const names = {
     instagram: 'Instagram',

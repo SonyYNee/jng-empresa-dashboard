@@ -50,4 +50,11 @@ npm run format:check
 
 As regras de estilo estão em [AGENTS.md](AGENTS.md). A documentação funcional está em [docs/dashboard.md](docs/dashboard.md) e [apps/landing/README.md](apps/landing/README.md).
 
-O Dockerfile da dashboard deve usar a raiz como contexto: `docker build -f deploy/dashboard/Dockerfile .`. A organização mantém dashboard e landing separadas para a futura hospedagem com dois links; esta alteração não publica as aplicações.
+O Dockerfile da dashboard deve usar a raiz como contexto: `docker build -f deploy/dashboard/Dockerfile .`.
+
+## Produção
+
+- Dashboard: https://jng-dashboard.vertraweb.app
+- Landing: https://jng-turismo.vertraweb.app
+
+As aplicações são separadas e a dashboard usa PostgreSQL. Consulte [docs/hospedagem.md](docs/hospedagem.md) para configuração, pacotes, backups e atualizações.

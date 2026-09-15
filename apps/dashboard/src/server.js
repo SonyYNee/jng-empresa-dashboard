@@ -15,7 +15,7 @@ import { isCoordinatePoint } from '../public/maps-link.js';
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 mkdirSync(join(root, 'data'), { recursive: true });
-const mediaDir = join(root, 'data', 'media');
+const mediaDir = process.env.MEDIA_DIR || join(root, 'data', 'media');
 mkdirSync(mediaDir, { recursive: true });
 
 const migrate = async () => {
@@ -26,18 +26,7 @@ const migrate = async () => {
   CREATE TABLE IF NOT EXISTS refills (id SERIAL PRIMARY KEY, vehicle_id INTEGER NOT NULL REFERENCES vehicles(id), kind TEXT NOT NULL, date TEXT NOT NULL, odometer DOUBLE PRECISION NOT NULL, litres DOUBLE PRECISION NOT NULL, price INTEGER NOT NULL, total INTEGER NOT NULL, tank_full INTEGER NOT NULL);
   CREATE TABLE IF NOT EXISTS maintenance (id SERIAL PRIMARY KEY, vehicle_id INTEGER NOT NULL REFERENCES vehicles(id), description TEXT NOT NULL, date TEXT NOT NULL, amount INTEGER NOT NULL, status TEXT NOT NULL, recurrence INTEGER NOT NULL DEFAULT 0);
   CREATE TABLE IF NOT EXISTS vehicle_entries (id SERIAL PRIMARY KEY, vehicle_id INTEGER NOT NULL REFERENCES vehicles(id), kind TEXT NOT NULL, description TEXT NOT NULL, date TEXT NOT NULL, amount INTEGER NOT NULL);
-  CREATE TABLE IF NOT EXISTS transport_routes (id SERIAL PRIMARY KEY, name TEXT NOT NULL, maps_url TEXT, maps_embed_url TEXT, origin TEXT, destination TEXT, stops TEXT, type TEXT, weekdays TEXT, departure TEXT, arrival TEXT, arrival_next_day BOOLEAN DEFAULT FALSE, distance DOUBLE PRECISION, total_price INTEGER, passenger_price INTEGER, status TEXT);
   `);
-  const routeCols = await db.all(
-    "SELECT column_name FROM information_schema.columns WHERE table_name='transport_routes'",
-  );
-  const routeColNames = routeCols.map((c) => c.column_name);
-  if (!routeColNames.includes('maps_embed_url'))
-    await db.run("ALTER TABLE transport_routes ADD COLUMN maps_embed_url TEXT NOT NULL DEFAULT ''");
-  if (!routeColNames.includes('total_price'))
-    await db.run('ALTER TABLE transport_routes ADD COLUMN total_price INTEGER');
-  if (!routeColNames.includes('passenger_price'))
-    await db.run('ALTER TABLE transport_routes ADD COLUMN passenger_price INTEGER');
   // ensure role and photo columns exist
   const cols = await db.all(
     "SELECT column_name FROM information_schema.columns WHERE table_name='users'",
@@ -76,7 +65,7 @@ async function ensureRuntimeState() {
 }
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 const attempts = new Map();
-const countUsers = async () => (await db.get('SELECT COUNT(*) AS total FROM users')).total;
+const countUsers = async () => Number((await db.get('SELECT COUNT(*) AS total FROM users')).total);
 function passwordHash(password) {
   const salt = randomBytes(16).toString('hex');
   return salt + ':' + scryptSync(password, salt, 64).toString('hex');
@@ -118,6 +107,7 @@ function validPhoto(photo, maxBytes = 512 * 1024) {
     : bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
 }
 const passwordAttempts = new Map();
+await ensureRuntimeState();
 const media = await initMedia(mediaDir, { session, json });
 const fleetHandler = await initFleet(db, {
   session,
@@ -146,7 +136,6 @@ function cookie(res, token, age, secure = currentProduction()) {
   );
 }
 export const server = http.createServer(async (req, res) => {
-  await ensureRuntimeState();
   const production = currentProduction();
   const setupToken = currentSetupToken();
   res.setHeader('Cache-Control', 'no-store');
@@ -158,7 +147,12 @@ export const server = http.createServer(async (req, res) => {
     "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
   );
   try {
+    await ensureRuntimeState();
     const url = new URL(req.url, 'http://localhost');
+    if (url.pathname === '/healthz' && req.method === 'GET') {
+      await db.get('SELECT 1 AS ready');
+      return json(res, 200, { status: 'ok' });
+    }
     if (req.method === 'POST') {
       const expected =
         process.env.APP_ORIGIN || `${production ? 'https' : 'http'}://${req.headers.host}`;

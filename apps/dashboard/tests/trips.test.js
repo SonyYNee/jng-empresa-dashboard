@@ -7,7 +7,7 @@ test('pacotes recorrentes: cadastro, publicacao, proxima saida e exclusao', asyn
   let input,
     result,
     user = { role: 'owner' };
-  const handler = initTrips(db, {
+  const handler = await initTrips(db, {
     session: () => user,
     body: async () => input,
     json: (_, status, data) => (result = { status, ...data }),

@@ -71,127 +71,81 @@ function sqliteExecute(text, params = []) {
   return { rows: [], rowCount: Number(result?.changes || 0) };
 }
 
-export function query(text, params = []) {
-  if (getSqliteDb()) return Promise.resolve(sqliteExecute(text, params));
-  return import('pg').then(({ default: pg }) => {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
+let pool;
+
+async function getPool() {
+  if (!pool) {
+    pool = import('pg').then(({ default: pg }) => {
+      if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required for PostgreSQL.');
+      const ssl = process.env.PGSSL === 'true' ? { rejectUnauthorized: true } : undefined;
+      if (ssl) {
+        for (const [name, variable] of Object.entries({
+          ca: 'PGSSLROOTCERT',
+          cert: 'PGSSLCERT',
+          key: 'PGSSLKEY',
+        })) {
+          if (process.env[variable]) ssl[name] = fs.readFileSync(process.env[variable], 'utf8');
+        }
+      }
+      const instance = new pg.Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl,
+        max: 5,
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000,
+      });
+      instance.on('error', (error) => console.error('PostgreSQL pool error:', error.code));
+      return instance;
     });
-    return pool.query(text, params);
-  });
+  }
+  return pool;
 }
 
-export function all(text, params = []) {
-  if (getSqliteDb()) return Promise.resolve(sqliteExecute(text, params).rows);
-  return import('pg').then(async ({ default: pg }) => {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
-    });
-    const res = await pool.query(text, params);
-    return res.rows;
-  });
+export async function query(text, params = []) {
+  if (getSqliteDb()) return sqliteExecute(text, params);
+  return (await getPool()).query(text, params);
 }
 
-export function get(text, params = []) {
-  if (getSqliteDb()) return Promise.resolve(sqliteExecute(text, params).rows[0] || null);
-  return import('pg').then(async ({ default: pg }) => {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
-    });
-    const res = await pool.query(text, params);
-    return res.rows[0] || null;
-  });
+export async function all(text, params = []) {
+  return (await query(text, params)).rows;
 }
 
-export function run(text, params = []) {
-  if (getSqliteDb()) return Promise.resolve(sqliteExecute(text, params));
-  return import('pg').then(({ default: pg }) => {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
-    });
-    return pool.query(text, params);
-  });
+export async function get(text, params = []) {
+  return (await query(text, params)).rows[0] || null;
 }
+
+export const run = query;
 
 export function exec(text) {
-  const db = getSqliteDb();
-  if (db) {
-    db.exec(normalizeSqliteSql(text));
+  const sqlite = getSqliteDb();
+  if (sqlite) {
+    sqlite.exec(normalizeSqliteSql(text));
     return { rows: [] };
   }
-  return import('pg').then(async ({ default: pg }) => {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
-    });
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      for (const stmt of text
-        .split(/;\s*\n/)
-        .map((s) => s.trim())
-        .filter(Boolean))
-        await client.query(stmt);
-      await client.query('COMMIT');
-      return { rows: [] };
-    } catch (error) {
-      try {
-        await client.query('ROLLBACK');
-      } catch {}
-      throw error;
-    } finally {
-      client.release();
-    }
-  });
+  return transaction((client) => client.query(text));
 }
 
-export function transaction(cb) {
-  const db = getSqliteDb();
-  if (db) {
-    db.exec('BEGIN');
-    return Promise.resolve().then(async () => {
-      try {
-        const client = {
-          async query(text, params = []) {
-            return sqliteExecute(text, params);
-          },
-          release() {},
-        };
-        const result = await cb(client);
-        db.exec('COMMIT');
-        return result;
-      } catch (error) {
-        try {
-          db.exec('ROLLBACK');
-        } catch {}
-        throw error;
-      }
-    });
+export async function transaction(callback) {
+  const sqlite = getSqliteDb();
+  const client = sqlite
+    ? { query: async (text, params = []) => sqliteExecute(text, params), release() {} }
+    : await (await getPool()).connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw error;
+  } finally {
+    client.release();
   }
-  return import('pg').then(async ({ default: pg }) => {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined,
-    });
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      const result = await cb(client);
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      try {
-        await client.query('ROLLBACK');
-      } catch {}
-      throw error;
-    } finally {
-      client.release();
-    }
-  });
 }
 
-export default { query, all, get, run, exec, transaction };
+export async function close() {
+  if (pool) await (await pool).end();
+  pool = undefined;
+}
+
+export default { query, all, get, run, exec, transaction, close };

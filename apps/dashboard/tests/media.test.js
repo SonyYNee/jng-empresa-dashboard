@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { initMedia } from '../src/media.js';
 test('upload preserva bytes originais acima de 5 MB e suporta reprodução parcial', async () => {
   const media = initMedia(mkdtempSync(join(tmpdir(), 'jng-media-')), {
-    session: () => ({ role: 'owner' }),
+    session: async () => ({ role: 'owner' }),
     json: (res, status, data) => {
       res.writeHead(status, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(data));

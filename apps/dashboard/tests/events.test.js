@@ -7,7 +7,7 @@ test('eventos: permissões, validação, publicação, edição e exclusão', as
   let user = { role: 'owner' },
     input = {},
     result;
-  const handler = initEvents(db, {
+  const handler = await initEvents(db, {
     session: () => user,
     body: async () => input,
     json: (_, status, data) => (result = { status, ...data }),

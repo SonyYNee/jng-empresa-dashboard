@@ -27,6 +27,8 @@ import { normalizeSqliteSql } from './db.js';
 
 function ensureDbCompat(db) {
   if (!db || typeof db.run === 'function') return db;
+  const originalExec = db.exec.bind(db);
+  db.exec = (sql) => originalExec(normalizeSqliteSql(sql));
   const safe = (sql, params = []) => {
     const normalized = normalizeSqliteSql(sql);
     const statement = db.prepare(normalized);
@@ -47,10 +49,10 @@ function ensureDbCompat(db) {
   return db;
 }
 
-export function initRoutes(db, { session, body, json }) {
+export async function initRoutes(db, { session, body, json }) {
   db = ensureDbCompat(db);
-  db.exec(
-    normalizeSqliteSql(`CREATE TABLE IF NOT EXISTS transport_routes (
+  await db.exec(
+    `CREATE TABLE IF NOT EXISTS transport_routes (
     id SERIAL PRIMARY KEY, name TEXT NOT NULL, maps_url TEXT NOT NULL,
     origin TEXT NOT NULL, destination TEXT NOT NULL, stops TEXT NOT NULL DEFAULT '[]',
     type TEXT NOT NULL DEFAULT 'charter', status TEXT NOT NULL DEFAULT 'draft',
@@ -59,27 +61,19 @@ export function initRoutes(db, { session, body, json }) {
     vehicle_id INTEGER REFERENCES vehicles(id) ON DELETE SET NULL,
     driver_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     notes TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now());`),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now());`,
   );
-  try {
-    if (typeof db.all === 'function') {
-      const cols = db.all(
-        "SELECT column_name FROM information_schema.columns WHERE table_name='transport_routes'",
-      );
-      if (cols && typeof cols.then === 'function') {
-        // Keep the initialization synchronous for the SQLite test harness; the production path will still
-        // handle column checks through the server migration path.
-      } else {
-        const colNames = cols.map((c) => c.column_name);
-        if (!colNames.includes('maps_embed_url'))
-          db.run("ALTER TABLE transport_routes ADD COLUMN maps_embed_url TEXT NOT NULL DEFAULT ''");
-        for (const column of ['total_price', 'passenger_price'])
-          if (!colNames.includes(column))
-            db.run(`ALTER TABLE transport_routes ADD COLUMN ${column} DOUBLE PRECISION`);
-        db.run("UPDATE transport_routes SET type='private' WHERE type IN ('transfer','regular')");
-      }
-    }
-  } catch {}
+  const cols = await db.all(
+    "SELECT column_name FROM information_schema.columns WHERE table_name='transport_routes'",
+  );
+  const colNames = cols.map((column) => column.column_name);
+  if (!colNames.includes('maps_embed_url'))
+    await db.run("ALTER TABLE transport_routes ADD COLUMN maps_embed_url TEXT NOT NULL DEFAULT ''");
+  for (const column of ['total_price', 'passenger_price']) {
+    if (!colNames.includes(column))
+      await db.run(`ALTER TABLE transport_routes ADD COLUMN ${column} DOUBLE PRECISION`);
+  }
+  await db.run("UPDATE transport_routes SET type='private' WHERE type IN ('transfer','regular')");
   const types = {
     charter: 'Transporte de funcionários — empresas',
     school: 'Transporte de alunos — escolas e faculdades',

@@ -2,6 +2,8 @@ import { normalizeSqliteSql } from './db.js';
 
 function ensureDbCompat(db) {
   if (!db || typeof db.run === 'function') return db;
+  const originalExec = db.exec.bind(db);
+  db.exec = (sql) => originalExec(normalizeSqliteSql(sql));
   const safe = (sql, params = []) => {
     const normalized = normalizeSqliteSql(sql);
     const statement = db.prepare(normalized);
@@ -22,12 +24,10 @@ function ensureDbCompat(db) {
   return db;
 }
 
-export function initEvents(db, { session, body, json, validPhoto }) {
+export async function initEvents(db, { session, body, json, validPhoto }) {
   db = ensureDbCompat(db);
-  db.exec(
-    normalizeSqliteSql(
-      'CREATE TABLE IF NOT EXISTS company_events (id SERIAL PRIMARY KEY, data TEXT NOT NULL)',
-    ),
+  await db.exec(
+    'CREATE TABLE IF NOT EXISTS company_events (id SERIAL PRIMARY KEY, data TEXT NOT NULL)',
   );
   const project = (row) => ({ ...JSON.parse(row.data), id: row.id, slug: `evento-${row.id}` });
   return async (req, res, path) => {

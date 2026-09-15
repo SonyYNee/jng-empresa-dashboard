@@ -29,7 +29,7 @@ export function initMedia(directory, { session, json }) {
         json(res, 405, { error: 'Método inválido.' });
         return true;
       }
-      if (!['owner', 'manager', 'fleet'].includes(session(req)?.role)) {
+      if (!['owner', 'manager', 'fleet'].includes((await session(req))?.role)) {
         json(res, 403, { error: 'Acesso restrito.' });
         return true;
       }

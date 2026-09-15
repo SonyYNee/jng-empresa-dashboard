@@ -62,6 +62,8 @@ import { normalizeSqliteSql } from './db.js';
 
 function ensureDbCompat(db) {
   if (!db || typeof db.run === 'function') return db;
+  const originalExec = db.exec.bind(db);
+  db.exec = (sql) => originalExec(normalizeSqliteSql(sql));
   const safe = (sql, params = []) => {
     const normalized = normalizeSqliteSql(sql);
     const statement = db.prepare(normalized);
@@ -82,10 +84,10 @@ function ensureDbCompat(db) {
   return db;
 }
 
-export function initFleet(db, { session, body, json, validPhoto }) {
+export async function initFleet(db, { session, body, json, validPhoto }) {
   db = ensureDbCompat(db);
-  db.exec(
-    normalizeSqliteSql(`CREATE TABLE IF NOT EXISTS vehicles (
+  await db.exec(
+    `CREATE TABLE IF NOT EXISTS vehicles (
     id SERIAL PRIMARY KEY, plate TEXT NOT NULL UNIQUE, model TEXT NOT NULL, year INTEGER NOT NULL,
     seats INTEGER NOT NULL, odometer DOUBLE PRECISION NOT NULL, fuel_capacity DOUBLE PRECISION NOT NULL,
     arla_capacity DOUBLE PRECISION NOT NULL DEFAULT 0, photos TEXT NOT NULL DEFAULT '[]');
@@ -99,7 +101,7 @@ export function initFleet(db, { session, body, json, validPhoto }) {
     status TEXT NOT NULL, recurrence INTEGER NOT NULL DEFAULT 0);
   CREATE TABLE IF NOT EXISTS vehicle_entries (
     id SERIAL PRIMARY KEY, vehicle_id INTEGER NOT NULL REFERENCES vehicles(id),
-    kind TEXT NOT NULL, description TEXT NOT NULL, date TEXT NOT NULL, amount INTEGER NOT NULL);`),
+    kind TEXT NOT NULL, description TEXT NOT NULL, date TEXT NOT NULL, amount INTEGER NOT NULL);`,
   );
   const fail = (message, status = 400) => {
     const error = new Error(message);
