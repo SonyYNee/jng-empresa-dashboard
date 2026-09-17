@@ -11,4 +11,5 @@ assets/originais/
 .env.*
 *.zip
 artifacts/
+cerebro/privado/
 **/public/assets/

@@ -1,0 +1,58 @@
+> jng-projeto@0.1.0 test
+> npm run test:dashboard && npm run test:landing
+
+
+> jng-projeto@0.1.0 test:dashboard
+> node --test apps/dashboard/tests/*.test.js
+
+✔ datas da dashboard aceitam SQLite e PostgreSQL sem duplicar o fuso (51.6845ms)
+✔ eventos: permissões, validação, publicação, edição e exclusão (17.6627ms)
+✔ previsão mensal separa agendadas e realizadas por mês e ano (2.3375ms)
+✔ quilometragem acima de 50 mil com formato brasileiro (0.6562ms)
+✔ média entre tanques completos, parciais e estimativas (0.4294ms)
+✔ frota: veículos isolados, custos, ARLA, agendamento e permissões (740.6151ms)
+✔ upload preserva bytes originais acima de 5 MB e suporta reprodução parcial (138.2472ms)
+✔ PostgreSQL: inicialização, IDs automáticos, preços decimais e chaves estrangeiras (1694.1013ms)
+✔ cálculo gratuito usa pontos do link, preserva ordem e converte metros (35.333ms)
+✔ coordenadas não são importadas como endereços (2.2722ms)
+✔ redirecionamentos de links curtos são limitados ao Maps (29.0742ms)
+✔ links Maps: pontos legíveis, links curtos e rejeição de outros destinos (0.875ms)
+✔ rotas: cadastro, edição, paradas, permissões e exclusão do veículo vinculado (878.41ms)
+✔ cadastro, proteção, login, persistência e logout (1631.7037ms)
+✔ pacotes recorrentes: cadastro, publicacao, proxima saida e exclusao (31.1358ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1857.677
+
+> jng-projeto@0.1.0 test:landing
+> npm --prefix apps/landing test
+
+
+> jng-site-comercial@1.0.0 test
+> node --test tests/*.test.js
+
+✔ evento real: capa navegavel, movimento reduzido e miniaturas do veiculo (193.8562ms)
+✔ hospedagem: links diretos, proxy público, mídia e isolamento da dashboard (98.6932ms)
+✔ todas as páginas renderizam sem cair no estado de erro (620.3482ms)
+✔ agendamento preserva veiculo da frota e permite editar retorno (30.2866ms)
+✔ wizard conserva dados ao voltar, valida datas e conclui sem envio (126.7294ms)
+✔ mensagem de orçamento preserva dados e formatação do WhatsApp (1.0673ms)
+✔ calendário temático bloqueia datas anteriores e seleciona a data (147.791ms)
+✔ orçamento recebe endereços editados, data e passageiros da rota (168.1924ms)
+✔ destaque ignora eventos encerrados e passados e prioriza campanha futura (1.584ms)
+✔ busca por destino sem acentos combina filtros e preserva vagas desconhecidas (0.8457ms)
+✔ validação impede volta anterior, passageiros inválidos e contato incompleto (19.6424ms)
+✔ serviço de demonstração nunca envia nem compartilha estado mutável (0.6306ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2923.2559

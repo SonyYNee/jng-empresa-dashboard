@@ -1,5 +1,7 @@
 # Padrão de código
 
+Para retomar o contexto deste projeto, leia primeiro `cerebro/LEIA-PRIMEIRO.md` e os documentos indicados ali. Nunca publique `cerebro/privado/`, que contém backups e credenciais.
+
 Estas regras se aplicam à dashboard e à landing page em `apps/landing/`.
 
 - Use 2 espaços por nível de indentação, nunca TAB.

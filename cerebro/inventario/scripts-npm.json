@@ -1,0 +1,23 @@
+{
+  "dashboard": {
+    "start": "node apps/dashboard/src/server.js",
+    "dev": "node --watch apps/dashboard/src/server.js",
+    "test": "npm run test:dashboard && npm run test:landing",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:dashboard": "node --test apps/dashboard/tests/*.test.js",
+    "test:landing": "npm --prefix apps/landing test",
+    "dev:landing": "npm --prefix apps/landing run dev",
+    "build:landing": "npm --prefix apps/landing run build",
+    "preview:landing": "npm --prefix apps/landing run preview",
+    "install:landing": "npm --prefix apps/landing ci",
+    "package:deploy": "powershell -NoProfile -File deploy/package.ps1"
+  },
+  "landing": {
+    "dev": "vite --host 127.0.0.1 --port 4173",
+    "build": "vite build && node scripts/prerender.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "test": "node --test tests/*.test.js",
+    "start": "node server.js"
+  }
+}

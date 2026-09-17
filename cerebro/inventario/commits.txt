@@ -1,0 +1,7 @@
+1637a4c4f342d91efb96ed8f5db90d0b2f980293 | 2026-09-15T16:51:23-03:00 | SonyYNee | Allow dashboard passwords with at least four characters
+db0e93c2491e681e05b963033d65c30622cb4253 | 2026-09-15T16:46:44-03:00 | SonyYNee | Fix dashboard date formatting for PostgreSQL timestamps
+1383fd7bd2cf739ed244d15944ba869361ac6f55 | 2026-09-15T15:54:19-03:00 | SonyYNee | Deploy separate dashboard and landing with PostgreSQL and public API proxy
+930c8ab58a95f05e0c6f42276e3f34bd66923a0a | 2026-09-15T02:32:22-03:00 | SonyYNee | Organize dashboard and landing sources, standardize formatting and remove tracked secrets
+040fca0815eff1e2389f1580741966f59af86dd3 | 2026-09-14T14:12:55-03:00 | SonyYNee | Fix production database config and bootstrap setup
+0bf688e0b10e74be66d6797e11e2bafbc6a68a69 | 2026-09-14T14:03:21-03:00 | SonyYNee | Remove unused site-comercial assets
+3edfa08de01258d630b882926570b1e0f6a6f9d7 | 2026-09-14T13:50:20-03:00 | SonyYNee | feat: clean deployable app

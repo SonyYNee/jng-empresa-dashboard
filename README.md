@@ -1,5 +1,7 @@
 # JNG — dashboard e site comercial
 
+Para retomar o desenvolvimento em outro computador, comece por [cerebro/LEIA-PRIMEIRO.md](cerebro/LEIA-PRIMEIRO.md). O backup privado fica em `cerebro/privado/` e não é enviado ao GitHub.
+
 ## Organização
 
 | Pasta                    | Conteúdo                                              |

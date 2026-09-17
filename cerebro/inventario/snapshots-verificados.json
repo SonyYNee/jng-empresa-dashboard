@@ -1,0 +1,20 @@
+[
+  {
+    "snapshot": "dashboard.zip",
+    "bytes": 14839223,
+    "entries": 40,
+    "zip_integrity": "ok"
+  },
+  {
+    "snapshot": "landing.zip",
+    "bytes": 6975129,
+    "entries": 37,
+    "zip_integrity": "ok"
+  },
+  {
+    "snapshot": "postgresql.zip",
+    "bytes": 36040311,
+    "entries": 1047,
+    "zip_integrity": "ok"
+  }
+]

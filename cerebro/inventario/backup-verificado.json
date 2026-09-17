@@ -1,0 +1,42 @@
+{
+  "captured_at_utc": "20260917-192502",
+  "code_commit": "1637a4c4f342d91efb96ed8f5db90d0b2f980293",
+  "private_archive": "cerebro/privado/JNG-BACKUP-COMPLETO-20260917-192502.zip",
+  "archive_bytes": 295923820,
+  "sha256": "9512d09cbcfa5beb7a7c9ac4aef78db43c591575f74649d654bbd0b04318f811",
+  "files_verified": 464,
+  "sessions": [
+    {
+      "id": "01a08db3-0a30-7aa2-93d6-cab192542399",
+      "file": "rollout-2026-09-10T20-41-56-01a08db3-0a30-7aa2-93d6-cab192542399.jsonl",
+      "bytes": 65189842,
+      "messages": 332,
+      "incomplete_lines": 0
+    },
+    {
+      "id": "01a08db7-bd91-71f0-af19-6a9fac67707c",
+      "file": "rollout-2026-09-10T20-47-04-01a08db7-bd91-71f0-af19-6a9fac67707c.jsonl",
+      "bytes": 101491,
+      "messages": 4,
+      "incomplete_lines": 0
+    },
+    {
+      "id": "01a08ee7-1045-7110-afb2-e95363ea2b05",
+      "file": "rollout-2026-09-11T02-18-22-01a08ee7-1045-7110-afb2-e95363ea2b05.jsonl",
+      "bytes": 11191254,
+      "messages": 35,
+      "incomplete_lines": 0
+    },
+    {
+      "id": "01a08ee8-8a35-7272-b9ed-8426e7d94f6e",
+      "file": "rollout-2026-09-11T02-19-59-01a08ee8-8a35-7272-b9ed-8426e7d94f6e.jsonl",
+      "bytes": 1145463,
+      "messages": 36,
+      "incomplete_lines": 0
+    }
+  ],
+  "embedded_images_extracted": 34,
+  "limitations": [],
+  "excluded_rebuildable": ["node_modules", ".git (substituído por bundle)"],
+  "off_device_copy": false
+}

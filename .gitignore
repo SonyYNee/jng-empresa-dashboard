@@ -7,4 +7,5 @@ data/
 certs/
 **/dist/
 artifacts/
+cerebro/privado/
 *.log
